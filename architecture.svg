@@ -1,0 +1,157 @@
+<svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1117;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#1a1d2e;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="claudeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#cc785c;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#a85a3e;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="mcpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b5bdb;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#2846c4;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="snGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0e6b3f;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0a5530;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrowR" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4dabf7"/>
+    </marker>
+    <marker id="arrowL" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+      <polygon points="10 0, 0 3.5, 10 7" fill="#4dabf7"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="url(#bgGrad)" rx="16"/>
+
+  <!-- Title -->
+  <text x="450" y="44" text-anchor="middle" fill="#e9ecef" font-size="18" font-weight="700" letter-spacing="0.5">servicenow-mcp-server — Architecture</text>
+
+  <!-- ─── CLAUDE DESKTOP BOX ─── -->
+  <rect x="40" y="80" width="200" height="340" rx="14" fill="#1e1e2e" stroke="#cc785c" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="40" y="80" width="200" height="44" rx="14" fill="url(#claudeGrad)"/>
+  <rect x="40" y="108" width="200" height="16" fill="url(#claudeGrad)"/>
+  <text x="140" y="108" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Claude Desktop</text>
+  <text x="140" y="124" text-anchor="middle" fill="#ffd8cc" font-size="10">/ Claude Code</text>
+
+  <!-- Claude inner items -->
+  <rect x="58" y="142" width="164" height="36" rx="8" fill="#2a1f1a" stroke="#cc785c" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="140" y="157" text-anchor="middle" fill="#ffa07a" font-size="11" font-weight="600">🧠 LLM Reasoning</text>
+  <text x="140" y="170" text-anchor="middle" fill="#c9a090" font-size="9">Plans which tools to call</text>
+
+  <rect x="58" y="188" width="164" height="36" rx="8" fill="#2a1f1a" stroke="#cc785c" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="140" y="203" text-anchor="middle" fill="#ffa07a" font-size="11" font-weight="600">💬 Natural Language</text>
+  <text x="140" y="216" text-anchor="middle" fill="#c9a090" font-size="9">User prompt → tool call</text>
+
+  <rect x="58" y="234" width="164" height="36" rx="8" fill="#2a1f1a" stroke="#cc785c" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="140" y="249" text-anchor="middle" fill="#ffa07a" font-size="11" font-weight="600">🔨 Tool Discovery</text>
+  <text x="140" y="262" text-anchor="middle" fill="#c9a090" font-size="9">Auto-reads tool definitions</text>
+
+  <rect x="58" y="280" width="164" height="36" rx="8" fill="#2a1f1a" stroke="#cc785c" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="140" y="295" text-anchor="middle" fill="#ffa07a" font-size="11" font-weight="600">📋 Context Window</text>
+  <text x="140" y="308" text-anchor="middle" fill="#c9a090" font-size="9">Accumulates tool results</text>
+
+  <rect x="58" y="326" width="164" height="36" rx="8" fill="#2a1f1a" stroke="#cc785c" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="140" y="341" text-anchor="middle" fill="#ffa07a" font-size="11" font-weight="600">🔄 Multi-step Agent</text>
+  <text x="140" y="354" text-anchor="middle" fill="#c9a090" font-size="9">Chains calls autonomously</text>
+
+  <text x="140" y="400" text-anchor="middle" fill="#888" font-size="9">stdio / MCP protocol</text>
+
+  <!-- ─── MCP SERVER BOX ─── -->
+  <rect x="330" y="80" width="240" height="340" rx="14" fill="#1e1e2e" stroke="#4dabf7" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="330" y="80" width="240" height="44" rx="14" fill="url(#mcpGrad)"/>
+  <rect x="330" y="108" width="240" height="16" fill="url(#mcpGrad)"/>
+  <text x="450" y="108" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">MCP Server (server.py)</text>
+  <text x="450" y="124" text-anchor="middle" fill="#bac8ff" font-size="10">FastMCP · Python · Local process</text>
+
+  <!-- Tool categories inside MCP -->
+  <rect x="348" y="142" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="161" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">🔍 Debugging  (3 tools)</text>
+
+  <rect x="348" y="178" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="197" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">🌊 Flow Designer  (4 tools)</text>
+
+  <rect x="348" y="214" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="233" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">⚙️ AI Agent Config  (5 tools)</text>
+
+  <rect x="348" y="250" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="269" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">📊 Exec Monitoring  (5 tools)</text>
+
+  <rect x="348" y="286" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="305" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">✍️ Write Operations  (14 tools)</text>
+
+  <rect x="348" y="322" width="204" height="28" rx="7" fill="#1a2a4a" stroke="#4dabf7" stroke-width="1" stroke-opacity="0.6"/>
+  <text x="450" y="341" text-anchor="middle" fill="#74c0fc" font-size="11" font-weight="600">🛠️ Utilities  (2 tools)</text>
+
+  <text x="450" y="395" text-anchor="middle" fill="#888" font-size="9">HTTPS · REST API · Basic Auth</text>
+
+  <!-- ─── SERVICENOW BOX ─── -->
+  <rect x="660" y="80" width="200" height="340" rx="14" fill="#1e1e2e" stroke="#40c057" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="660" y="80" width="200" height="44" rx="14" fill="url(#snGrad)"/>
+  <rect x="660" y="108" width="200" height="16" fill="url(#snGrad)"/>
+  <text x="760" y="108" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">ServiceNow</text>
+  <text x="760" y="124" text-anchor="middle" fill="#b2f2bb" font-size="10">yourinstance.service-now.com</text>
+
+  <!-- SN inner tables -->
+  <rect x="678" y="142" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="161" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">sn_aia_agent / sn_aia_tool</text>
+
+  <rect x="678" y="178" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="197" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">sn_aia_usecase / trigger</text>
+
+  <rect x="678" y="214" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="233" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">sn_aia_execution_plan</text>
+
+  <rect x="678" y="250" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="269" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">sn_aia_tools_execution</text>
+
+  <rect x="678" y="286" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="305" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">sys_generative_ai_log</text>
+
+  <rect x="678" y="322" width="164" height="28" rx="7" fill="#0d2b1a" stroke="#40c057" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="760" y="341" text-anchor="middle" fill="#69db7c" font-size="10" font-weight="600">syslog / sys_flow_log</text>
+
+  <text x="760" y="395" text-anchor="middle" fill="#888" font-size="9">Table API  /api/now/table/</text>
+
+  <!-- ─── ARROWS ─── -->
+  <!-- Claude → MCP -->
+  <line x1="242" y1="250" x2="326" y2="250" stroke="#4dabf7" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowR)"/>
+  <!-- MCP → Claude -->
+  <line x1="326" y1="260" x2="242" y2="260" stroke="#4dabf7" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowL)"/>
+
+  <!-- MCP → SN -->
+  <line x1="572" y1="250" x2="656" y2="250" stroke="#40c057" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowR)"/>
+  <!-- SN → MCP -->
+  <line x1="656" y1="260" x2="572" y2="260" stroke="#40c057" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowL)"/>
+
+  <!-- Arrow labels -->
+  <rect x="254" y="228" width="64" height="16" rx="4" fill="#0f1117"/>
+  <text x="286" y="240" text-anchor="middle" fill="#4dabf7" font-size="9">tool call</text>
+  <rect x="254" y="262" width="64" height="16" rx="4" fill="#0f1117"/>
+  <text x="286" y="274" text-anchor="middle" fill="#4dabf7" font-size="9">result</text>
+
+  <rect x="582" y="228" width="64" height="16" rx="4" fill="#0f1117"/>
+  <text x="614" y="240" text-anchor="middle" fill="#40c057" font-size="9">REST GET/POST</text>
+  <rect x="582" y="262" width="64" height="16" rx="4" fill="#0f1117"/>
+  <text x="614" y="274" text-anchor="middle" fill="#40c057" font-size="9">JSON response</text>
+
+  <!-- ─── BOTTOM LEGEND ─── -->
+  <rect x="40" y="444" width="820" height="56" rx="10" fill="#ffffff08" stroke="#ffffff12" stroke-width="1"/>
+  <circle cx="80" cy="472" r="6" fill="#cc785c"/>
+  <text x="94" y="476" fill="#c9a090" font-size="11">Claude Desktop / Claude Code</text>
+  <circle cx="280" cy="472" r="6" fill="#4dabf7"/>
+  <text x="294" y="476" fill="#a5d8ff" font-size="11">MCP Server (local Python process)</text>
+  <circle cx="510" cy="472" r="6" fill="#40c057"/>
+  <text x="524" y="476" fill="#b2f2bb" font-size="11">ServiceNow Instance (cloud)</text>
+  <text x="450" y="490" text-anchor="middle" fill="#555" font-size="9">All communication is outbound from the MCP server · No inbound ports required</text>
+</svg>

@@ -1,0 +1,100 @@
+<svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1117"/>
+      <stop offset="100%" style="stop-color:#1a1d2e"/>
+    </linearGradient>
+    <marker id="arr4r" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#fa5252"/>
+    </marker>
+    <marker id="arr4g" markerWidth="9" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 9 3, 0 6" fill="#69db7c"/>
+    </marker>
+    <filter id="sh4">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="500" fill="url(#bg4)" rx="16"/>
+  <text x="450" y="40" text-anchor="middle" fill="#e9ecef" font-size="18" font-weight="700">Before vs. After — Developer Workflow</text>
+
+  <!-- Divider -->
+  <line x1="450" y1="58" x2="450" y2="470" stroke="#333" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+  <!-- BEFORE header -->
+  <rect x="30" y="58" width="400" height="36" rx="10" fill="#3b0f0f"/>
+  <text x="230" y="82" text-anchor="middle" fill="#ff6b6b" font-size="14" font-weight="700">❌  Before  —  Manual Process</text>
+
+  <!-- AFTER header -->
+  <rect x="470" y="58" width="400" height="36" rx="10" fill="#0a2e18"/>
+  <text x="670" y="82" text-anchor="middle" fill="#69db7c" font-size="14" font-weight="700">✅  After  —  With MCP Server</text>
+
+  <!-- Scenario label -->
+  <text x="450" y="118" text-anchor="middle" fill="#888" font-size="10" font-style="italic">Scenario: "Why did the agentic workflow fail?"</text>
+
+  <!-- BEFORE steps -->
+  <!-- B1 -->
+  <rect x="40" y="130" width="380" height="42" rx="8" fill="#2a1010" stroke="#fa5252" stroke-width="1" filter="url(#sh4)"/>
+  <text x="60" y="149" fill="#ff8787" font-size="11" font-weight="700">1. Open ServiceNow browser</text>
+  <text x="60" y="163" fill="#c9a090" font-size="9">Navigate to instance URL, log in, find AI Agent Studio</text>
+  <line x1="230" y1="172" x2="230" y2="184" stroke="#fa5252" stroke-width="1.5" marker-end="url(#arr4r)"/>
+
+  <!-- B2 -->
+  <rect x="40" y="186" width="380" height="42" rx="8" fill="#2a1010" stroke="#fa5252" stroke-width="1" filter="url(#sh4)"/>
+  <text x="60" y="205" fill="#ff8787" font-size="11" font-weight="700">2. Query sn_aia_execution_plan</text>
+  <text x="60" y="219" fill="#c9a090" font-size="9">Filter by state=error, find the failed record, copy sys_id</text>
+  <line x1="230" y1="228" x2="230" y2="240" stroke="#fa5252" stroke-width="1.5" marker-end="url(#arr4r)"/>
+
+  <!-- B3 -->
+  <rect x="40" y="242" width="380" height="42" rx="8" fill="#2a1010" stroke="#fa5252" stroke-width="1" filter="url(#sh4)"/>
+  <text x="60" y="261" fill="#ff8787" font-size="11" font-weight="700">3. Query sn_aia_tools_execution</text>
+  <text x="60" y="275" fill="#c9a090" font-size="9">Open another tab, filter by execution_plan sys_id, find error</text>
+  <line x1="230" y1="284" x2="230" y2="296" stroke="#fa5252" stroke-width="1.5" marker-end="url(#arr4r)"/>
+
+  <!-- B4 -->
+  <rect x="40" y="298" width="380" height="42" rx="8" fill="#2a1010" stroke="#fa5252" stroke-width="1" filter="url(#sh4)"/>
+  <text x="60" y="317" fill="#ff8787" font-size="11" font-weight="700">4. Query sys_generative_ai_log</text>
+  <text x="60" y="331" fill="#c9a090" font-size="9">Another tab, correlate by execution_plan, check error_message</text>
+  <line x1="230" y1="340" x2="230" y2="352" stroke="#fa5252" stroke-width="1.5" marker-end="url(#arr4r)"/>
+
+  <!-- B5 -->
+  <rect x="40" y="354" width="380" height="42" rx="8" fill="#2a1010" stroke="#fa5252" stroke-width="1" filter="url(#sh4)"/>
+  <text x="60" y="373" fill="#ff8787" font-size="11" font-weight="700">5. Query sys_flow_log</text>
+  <text x="60" y="387" fill="#c9a090" font-size="9">Yet another tab, find flow context, cross-reference manually</text>
+  <line x1="230" y1="396" x2="230" y2="408" stroke="#fa5252" stroke-width="1.5" marker-end="url(#arr4r)"/>
+
+  <!-- B Result -->
+  <rect x="40" y="410" width="380" height="44" rx="8" fill="#3b0f0f" stroke="#fa5252" stroke-width="1.5"/>
+  <text x="230" y="430" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">⏱ ~15–30 min</text>
+  <text x="230" y="446" text-anchor="middle" fill="#c9a090" font-size="9">5 browser tabs · manual correlation · error-prone</text>
+
+  <!-- AFTER steps -->
+  <!-- A1 -->
+  <rect x="460" y="130" width="420" height="42" rx="8" fill="#0a2810" stroke="#40c057" stroke-width="1" filter="url(#sh4)"/>
+  <text x="480" y="149" fill="#69db7c" font-size="11" font-weight="700">1. Open Claude Desktop</text>
+  <text x="480" y="163" fill="#8ecb96" font-size="9">Already connected to your ServiceNow instance via MCP server</text>
+  <line x1="670" y1="172" x2="670" y2="184" stroke="#40c057" stroke-width="1.5" marker-end="url(#arr4g)"/>
+
+  <!-- A2 -->
+  <rect x="460" y="186" width="420" height="76" rx="8" fill="#0a2810" stroke="#40c057" stroke-width="1" filter="url(#sh4)"/>
+  <text x="480" y="205" fill="#69db7c" font-size="11" font-weight="700">2. Type your question</text>
+  <rect x="478" y="212" width="384" height="42" rx="6" fill="#071a0c" stroke="#2d6e3a" stroke-width="1"/>
+  <text x="490" y="229" fill="#b2f2bb" font-size="10" font-style="italic">"Why did the last agentic workflow execution fail?</text>
+  <text x="490" y="243" fill="#b2f2bb" font-size="10" font-style="italic">Show me the error details and which tool failed."</text>
+  <line x1="670" y1="262" x2="670" y2="278" stroke="#40c057" stroke-width="1.5" marker-end="url(#arr4g)"/>
+
+  <!-- A3 -->
+  <rect x="460" y="280" width="420" height="58" rx="8" fill="#0a2810" stroke="#40c057" stroke-width="1" filter="url(#sh4)"/>
+  <text x="480" y="299" fill="#69db7c" font-size="11" font-weight="700">3. Claude auto-chains tool calls</text>
+  <text x="480" y="313" fill="#8ecb96" font-size="9">query_execution_plans → get_execution_details</text>
+  <text x="480" y="326" fill="#8ecb96" font-size="9">→ query_tool_executions → query_generative_ai_logs</text>
+  <line x1="670" y1="338" x2="670" y2="354" stroke="#40c057" stroke-width="1.5" marker-end="url(#arr4g)"/>
+
+  <!-- A Result -->
+  <rect x="460" y="356" width="420" height="98" rx="8" fill="#0d3b1f" stroke="#40c057" stroke-width="1.5"/>
+  <text x="670" y="378" text-anchor="middle" fill="#69db7c" font-size="12" font-weight="700">⏱ ~30 seconds</text>
+  <text x="480" y="398" fill="#b2f2bb" font-size="9" font-style="italic">"The execution plan failed at 14:32 UTC. The 'Fetch</text>
+  <text x="480" y="412" fill="#b2f2bb" font-size="9" font-style="italic">Incident Details' tool returned a 403 error — the agent</text>
+  <text x="480" y="426" fill="#b2f2bb" font-size="9" font-style="italic">lacks the itil role needed to read incident records."</text>
+  <text x="670" y="446" text-anchor="middle" fill="#888" font-size="9">Full diagnosis · actionable root cause · no tab switching</text>
+</svg>

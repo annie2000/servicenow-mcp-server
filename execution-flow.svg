@@ -1,0 +1,111 @@
+<svg viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1117"/>
+      <stop offset="100%" style="stop-color:#1a1d2e"/>
+    </linearGradient>
+    <marker id="arr3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4dabf7"/>
+    </marker>
+    <marker id="arr3g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#69db7c"/>
+    </marker>
+    <filter id="sh3">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="440" fill="url(#bg3)" rx="16"/>
+  <text x="450" y="40" text-anchor="middle" fill="#e9ecef" font-size="18" font-weight="700">How It Works — Execution Flow</text>
+
+  <!-- Step boxes -->
+  <!-- Step 1: User -->
+  <rect x="30" y="70" width="130" height="110" rx="12" fill="#1e1e2e" stroke="#cc785c" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="30" y="70" width="130" height="30" rx="12" fill="#cc785c"/>
+  <rect x="30" y="88" width="130" height="12" fill="#cc785c"/>
+  <text x="95" y="89" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">① User</text>
+  <text x="95" y="120" text-anchor="middle" fill="#ffa07a" font-size="22">💬</text>
+  <text x="95" y="148" text-anchor="middle" fill="#c9a090" font-size="9" font-style="italic">"Show me all failed</text>
+  <text x="95" y="160" text-anchor="middle" fill="#c9a090" font-size="9" font-style="italic">execution plans"</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="162" y1="126" x2="194" y2="126" stroke="#4dabf7" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="178" y="118" text-anchor="middle" fill="#4dabf7" font-size="8">prompt</text>
+
+  <!-- Step 2: Claude LLM -->
+  <rect x="196" y="70" width="130" height="110" rx="12" fill="#1e1e2e" stroke="#cc785c" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="196" y="70" width="130" height="30" rx="12" fill="#7048b0"/>
+  <rect x="196" y="88" width="130" height="12" fill="#7048b0"/>
+  <text x="261" y="89" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">② Claude LLM</text>
+  <text x="261" y="116" text-anchor="middle" fill="#b197fc" font-size="10">Reads tool definitions</text>
+  <text x="261" y="130" text-anchor="middle" fill="#b197fc" font-size="10">Decides which tool</text>
+  <text x="261" y="144" text-anchor="middle" fill="#b197fc" font-size="10">to call + params</text>
+  <text x="261" y="162" text-anchor="middle" fill="#888" font-size="8">query_execution_plans</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="328" y1="126" x2="360" y2="126" stroke="#4dabf7" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="344" y="118" text-anchor="middle" fill="#4dabf7" font-size="8">tool call</text>
+
+  <!-- Step 3: MCP Server -->
+  <rect x="362" y="70" width="130" height="110" rx="12" fill="#1e1e2e" stroke="#4dabf7" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="362" y="70" width="130" height="30" rx="12" fill="#3b5bdb"/>
+  <rect x="362" y="88" width="130" height="12" fill="#3b5bdb"/>
+  <text x="427" y="89" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">③ MCP Server</text>
+  <text x="427" y="114" text-anchor="middle" fill="#74c0fc" font-size="10">Receives tool name</text>
+  <text x="427" y="128" text-anchor="middle" fill="#74c0fc" font-size="10">+ parameters</text>
+  <text x="427" y="144" text-anchor="middle" fill="#74c0fc" font-size="10">Builds REST query</text>
+  <text x="427" y="162" text-anchor="middle" fill="#888" font-size="8">server.py · Python</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="494" y1="126" x2="526" y2="126" stroke="#40c057" stroke-width="2" marker-end="url(#arr3g)"/>
+  <text x="510" y="118" text-anchor="middle" fill="#40c057" font-size="8">HTTPS GET</text>
+
+  <!-- Step 4: ServiceNow -->
+  <rect x="528" y="70" width="130" height="110" rx="12" fill="#1e1e2e" stroke="#40c057" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="528" y="70" width="130" height="30" rx="12" fill="#0e6b3f"/>
+  <rect x="528" y="88" width="130" height="12" fill="#0e6b3f"/>
+  <text x="593" y="89" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">④ ServiceNow</text>
+  <text x="593" y="114" text-anchor="middle" fill="#69db7c" font-size="10">Receives API call</text>
+  <text x="593" y="128" text-anchor="middle" fill="#69db7c" font-size="10">Queries table(s)</text>
+  <text x="593" y="144" text-anchor="middle" fill="#69db7c" font-size="10">Returns JSON</text>
+  <text x="593" y="162" text-anchor="middle" fill="#888" font-size="8">/api/now/table/…</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="660" y1="126" x2="692" y2="126" stroke="#4dabf7" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="676" y="118" text-anchor="middle" fill="#4dabf7" font-size="8">JSON</text>
+
+  <!-- Step 5: MCP formats -->
+  <rect x="694" y="70" width="130" height="110" rx="12" fill="#1e1e2e" stroke="#4dabf7" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="694" y="70" width="130" height="30" rx="12" fill="#3b5bdb"/>
+  <rect x="694" y="88" width="130" height="12" fill="#3b5bdb"/>
+  <text x="759" y="89" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">⑤ MCP Formats</text>
+  <text x="759" y="114" text-anchor="middle" fill="#74c0fc" font-size="10">Parses JSON</text>
+  <text x="759" y="128" text-anchor="middle" fill="#74c0fc" font-size="10">Formats as string</text>
+  <text x="759" y="144" text-anchor="middle" fill="#74c0fc" font-size="10">Returns to Claude</text>
+  <text x="759" y="162" text-anchor="middle" fill="#888" font-size="8">tool result → context</text>
+
+  <!-- Return arrow 5→Claude (curved back) -->
+  <path d="M 759 182 Q 759 230 427 230 Q 261 230 261 195" stroke="#ffd43b" stroke-width="2" fill="none" stroke-dasharray="5,3" marker-end="url(#arr3)"/>
+  <rect x="370" y="218" width="120" height="16" rx="4" fill="#0f1117"/>
+  <text x="430" y="230" text-anchor="middle" fill="#ffd43b" font-size="9">tool result injected into context</text>
+
+  <!-- Step 6: Response -->
+  <rect x="196" y="270" width="510" height="90" rx="12" fill="#1e1e2e" stroke="#cc785c" stroke-width="1.5" filter="url(#sh3)"/>
+  <rect x="196" y="270" width="510" height="30" rx="12" fill="#5c3311"/>
+  <rect x="196" y="288" width="510" height="12" fill="#5c3311"/>
+  <text x="451" y="289" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">⑥ Claude Synthesizes &amp; Responds</text>
+  <text x="451" y="318" text-anchor="middle" fill="#ffa07a" font-size="10">Claude reads the tool result in its context window and generates a natural language response.</text>
+  <text x="451" y="334" text-anchor="middle" fill="#ffa07a" font-size="10">If more information is needed, it can call additional tools automatically (multi-step reasoning).</text>
+  <text x="451" y="350" text-anchor="middle" fill="#c9a090" font-size="9" font-style="italic">"I found 3 failed execution plans in the last hour. The most recent failure occurred at 14:32 UTC…"</text>
+
+  <!-- Final arrow down to user -->
+  <line x1="95" y1="182" x2="95" y2="310" stroke="#cc785c" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="95" y1="310" x2="194" y2="310" stroke="#cc785c" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="95" y="300" text-anchor="middle" fill="#c9a090" font-size="8">final answer</text>
+  <text x="95" y="310" text-anchor="middle" fill="#c9a090" font-size="8">to user</text>
+
+  <!-- Multi-step note -->
+  <rect x="30" y="380" width="840" height="42" rx="10" fill="#ffffff06" stroke="#ffffff10" stroke-width="1"/>
+  <text x="450" y="398" text-anchor="middle" fill="#aaa" font-size="10" font-weight="600">MULTI-STEP REASONING</text>
+  <text x="450" y="414" text-anchor="middle" fill="#666" font-size="9">Claude can chain multiple tool calls in a single response — e.g. query_execution_plans → get_execution_details → query_generative_ai_logs — without any extra user input.</text>
+</svg>

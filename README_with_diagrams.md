@@ -4,6 +4,22 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that co
 
 ---
 
+## Diagrams
+
+### Architecture
+![Architecture](docs/images/architecture.svg)
+
+### How It Works — Execution Flow
+![Execution Flow](docs/images/execution-flow.svg)
+
+### Tool Categories
+![Tool Categories](docs/images/tool-categories.svg)
+
+### Before vs. After
+![Before After](docs/images/before-after.svg)
+
+---
+
 ## Background
 
 ### What is ServiceNow?
