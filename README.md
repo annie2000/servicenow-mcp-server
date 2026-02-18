@@ -4,6 +4,48 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that co
 
 ---
 
+## Background
+
+### What is ServiceNow?
+
+[ServiceNow](https://www.servicenow.com) is an enterprise cloud platform built around workflow automation and IT service management (ITSM). At its core, it provides a unified system of record for business processes — incidents, change requests, approvals, and more — across IT, HR, security, and customer service teams.
+
+In recent releases (Vancouver, Washington DC, Xanadu), ServiceNow introduced **AI Agent Studio** and the **Now Assist** platform, enabling organizations to build and deploy autonomous AI agents that can reason, plan, and execute multi-step workflows using a growing library of tools. These agents are orchestrated through **Agentic Workflows** (use cases) and backed by LLMs — making them powerful but also complex to debug and manage.
+
+### What is MCP?
+
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard developed by Anthropic that defines how AI models like Claude connect to external tools and data sources. Think of it as a universal adapter: instead of building one-off integrations for every system, MCP gives any MCP-compatible AI model a standardized way to discover and call tools exposed by an MCP server.
+
+An MCP server is a lightweight process that:
+1. Declares a list of **tools** (functions with typed inputs and descriptions)
+2. Executes those tools when called by the AI model
+3. Returns results back to the model's context
+
+This means Claude can call `list_ai_agents()` or `query_execution_plans()` the same way it reasons about any other information — no custom UI, no manual API calls.
+
+### What is Claude Code?
+
+[Claude Code](https://claude.ai/download) is Anthropic's agentic coding environment that runs Claude directly in your terminal. Unlike the web chat interface, Claude Code can read and write files, execute shell commands, browse the web, and — critically — connect to MCP servers running locally on your machine.
+
+When combined with this MCP server, Claude Code can interact with your ServiceNow instance as a fully autonomous agent: inspecting logs, diagnosing failures, creating or modifying AI agents, and executing multi-step investigations — all from a single terminal session.
+
+### Why use all three together?
+
+ServiceNow's AI Agent platform is powerful but operationally opaque. When an agentic workflow fails, diagnosing the root cause requires jumping between multiple tables (`sn_aia_execution_plan`, `sn_aia_tools_execution`, `sys_generative_ai_log`, `sys_flow_log`) with no unified view. Managing agents — creating, cloning, updating tool configurations — requires navigating the UI or writing REST API calls by hand.
+
+This MCP server closes that gap:
+
+| Without this server | With this server |
+|---|---|
+| Manually query 5+ tables to debug a failed workflow | Ask Claude: *"Why did the last execution plan fail?"* |
+| Write REST API calls to create or clone an agent | Ask Claude: *"Clone the MS Learn Agent and add the web search tool"* |
+| Switch between browser tabs to correlate logs | Ask Claude: *"Show me all errors from the last hour across syslog and AI logs"* |
+| Require ServiceNow UI expertise to onboard new developers | Any developer with Claude Desktop can inspect and manage agents immediately |
+
+The combination of ServiceNow's agentic platform, MCP's tool protocol, and Claude's reasoning gives developers a conversational interface to a system that was previously only accessible through complex UIs and REST APIs. For SI partners building on ServiceNow's AI capabilities, this dramatically reduces the time to understand, debug, and extend agentic workflows.
+
+---
+
 ## Overview
 
 This MCP server exposes **40+ tools** that Claude can call directly, organized into five categories:
