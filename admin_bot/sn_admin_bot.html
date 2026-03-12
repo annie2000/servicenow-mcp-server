@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceNow Admin Bot — Instance Health Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0B0F1A;
+  --bg2:       #111827;
+  --bg3:       #1A2235;
+  --bg4:       #1E2A40;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --text:      #E8EDF5;
+  --text2:     #A8B4CC;
+  --muted:     #5A6B88;
+  --accent:    #16C553;
+  --accent2:   #0A6EFF;
+  --red:       #FF3B5C;
+  --amber:     #FFB020;
+  --green:     #16C553;
+  --purple:    #8B5CF6;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --r:         8px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  height:100%; background:var(--bg);
+  color:var(--text); font-family:var(--font-sans);
+  font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg2); }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:3px; }
+
+/* ══ SCREENS ══ */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; }
+
+/* ══ LOGIN ══ */
+#screen-login {
+  flex-direction:column; align-items:center; justify-content:center;
+  background: radial-gradient(ellipse at 30% 20%, rgba(22,197,83,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(10,110,255,0.08) 0%, transparent 60%), var(--bg);
+  padding:24px;
+}
+.login-card {
+  width:100%; max-width:460px;
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:16px; padding:40px;
+  box-shadow:var(--shadow), 0 0 80px rgba(22,197,83,0.05);
+}
+.login-logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+.login-logo-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+.login-logo-text { font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--text2); line-height:1.3; }
+.login-logo-text span { display:block; color:var(--text); font-size:16px; }
+.login-title { font-size:22px; font-weight:600; margin-bottom:6px; }
+.login-subtitle { color:var(--text2); font-size:13px; margin-bottom:28px; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+.field input { width:100%; padding:10px 14px; background:var(--bg3); border:1px solid var(--border2); border-radius:var(--r); color:var(--text); font-family:var(--font-mono); font-size:13px; outline:none; transition:border-color 0.2s; }
+.field input:focus { border-color:var(--accent); }
+.field input::placeholder { color:var(--muted); }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.btn-primary { width:100%; padding:12px; background:var(--accent); border:none; border-radius:var(--r); color:#000; font-family:var(--font-mono); font-size:13px; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity 0.2s, transform 0.1s; letter-spacing:0.04em; }
+.btn-primary:hover { opacity:0.9; }
+.btn-primary:active { transform:scale(0.99); }
+.login-note { margin-top:20px; padding:12px; background:rgba(255,176,32,0.08); border:1px solid rgba(255,176,32,0.2); border-radius:var(--r); font-size:12px; color:var(--amber); font-family:var(--font-mono); }
+.cors-warning { display:none; margin-top:12px; padding:12px; background:rgba(255,59,92,0.08); border:1px solid rgba(255,59,92,0.2); border-radius:var(--r); font-size:12px; color:var(--red); font-family:var(--font-mono); line-height:1.7; }
+
+/* ══ RUN SCREEN ══ */
+#screen-run { flex-direction:column; }
+.topbar { height:56px; min-height:56px; background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 24px; gap:16px; }
+.topbar-logo { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--accent); letter-spacing:0.04em; }
+.topbar-instance { font-family:var(--font-mono); font-size:12px; color:var(--text2); padding:4px 10px; background:var(--bg3); border-radius:20px; border:1px solid var(--border2); }
+.topbar-spacer { flex:1; }
+.topbar-btn { padding:6px 14px; background:transparent; border:1px solid var(--border2); border-radius:var(--r); color:var(--text2); font-family:var(--font-mono); font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s; letter-spacing:0.04em; }
+.topbar-btn:hover { border-color:var(--accent); color:var(--accent); }
+.run-body { flex:1; display:grid; grid-template-columns:340px 1fr; overflow:hidden; }
+.left-panel { background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; padding:20px; }
+.right-panel { overflow-y:auto; padding:24px; background:var(--bg); }
+
+/* ══ Checklist ══ */
+.phase-header { font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; margin-top:20px; }
+.phase-header:first-child { margin-top:0; }
+.check-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:6px; margin-bottom:2px; transition:background 0.2s; }
+.check-item:hover { background:var(--bg3); }
+.check-icon { width:18px; height:18px; min-width:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; }
+.check-icon.pending { border:2px solid var(--muted); }
+.check-icon.running { border:2px solid var(--accent2); animation:spin 1s linear infinite; }
+.check-icon.ok  { background:var(--green); }
+.check-icon.warn{ background:var(--amber); }
+.check-icon.fail{ background:var(--red); }
+.check-icon.skip{ background:var(--muted); }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.check-label { font-family:var(--font-mono); font-size:11px; color:var(--text2); flex:1; }
+.check-val { font-family:var(--font-mono); font-size:10px; color:var(--muted); }
+
+/* ══ Right panel ══ */
+.section-title { font-size:18px; font-weight:600; margin-bottom:4px; }
+.section-sub { color:var(--text2); font-size:13px; margin-bottom:20px; }
+.progress-bar-wrap { height:4px; background:var(--bg3); border-radius:2px; margin-bottom:24px; overflow:hidden; }
+.progress-bar { height:100%; background:var(--accent); border-radius:2px; width:0%; transition:width 0.6s ease; }
+
+/* ══ Cards ══ */
+.cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-bottom:24px; }
+.card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:16px;
+  transition:border-color 0.2s, transform 0.15s, box-shadow 0.15s;
+  position:relative;
+}
+.card.ok   { border-left:3px solid var(--green); }
+.card.warn { border-left:3px solid var(--amber); }
+.card.fail { border-left:3px solid var(--red); }
+.card.clickable {
+  cursor:pointer;
+}
+.card.clickable:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+}
+.card.clickable.warn:hover { border-color:var(--amber); box-shadow:0 8px 24px rgba(255,176,32,0.15); }
+.card.clickable.fail:hover { border-color:var(--red);   box-shadow:0 8px 24px rgba(255,59,92,0.15); }
+.card-click-hint {
+  position:absolute; top:10px; right:10px;
+  font-size:10px; color:var(--muted);
+  font-family:var(--font-mono);
+  opacity:0; transition:opacity 0.2s;
+}
+.card.clickable:hover .card-click-hint { opacity:1; }
+.card-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.card-badge { font-family:var(--font-mono); font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.06em; }
+.card-badge.ok   { background:rgba(22,197,83,0.15);  color:var(--green); }
+.card-badge.warn { background:rgba(255,176,32,0.15); color:var(--amber); }
+.card-badge.fail { background:rgba(255,59,92,0.15);  color:var(--red);   }
+.card-name { font-size:13px; font-weight:600; }
+.card-value { font-family:var(--font-mono); font-size:22px; font-weight:700; margin-bottom:4px; }
+.card-value.ok   { color:var(--green); }
+.card-value.warn { color:var(--amber); }
+.card-value.fail { color:var(--red);   }
+.card-desc { font-size:12px; color:var(--text2); }
+
+/* ══ Triage ══ */
+.triage-box { background:var(--bg2); border:1px solid var(--border2); border-radius:12px; padding:20px; margin-bottom:20px; }
+.triage-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:12px; }
+.triage-row:last-child { border-bottom:none; }
+.triage-label { color:var(--text2); }
+.triage-result { font-weight:600; }
+.triage-result.ok   { color:var(--green); }
+.triage-result.warn { color:var(--amber); }
+.triage-result.fail { color:var(--red);   }
+.path-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-family:var(--font-mono); font-size:12px; font-weight:700; margin-top:12px; }
+.path-badge.path1 { background:rgba(22,197,83,0.12); border:1px solid rgba(22,197,83,0.3); color:var(--green); }
+.path-badge.path2 { background:rgba(255,59,92,0.12);  border:1px solid rgba(255,59,92,0.3);  color:var(--red); }
+
+/* ══ Benchmark ══ */
+.bench-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; margin-bottom:20px; }
+.bench-table th { text-align:left; padding:8px 12px; background:var(--bg3); color:var(--text2); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid var(--border); }
+.bench-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); }
+.bench-table tr:last-child td { border-bottom:none; }
+.bench-bar-wrap { height:6px; background:var(--bg4); border-radius:3px; overflow:hidden; min-width:80px; }
+.bench-bar { height:100%; border-radius:3px; transition:width 1s ease; }
+.score-total { text-align:center; padding:24px; background:var(--bg2); border:1px solid var(--border2); border-radius:12px; margin-bottom:20px; }
+.score-grade { font-family:var(--font-mono); font-size:48px; font-weight:700; margin-bottom:4px; }
+.score-ms { font-family:var(--font-mono); font-size:18px; color:var(--text2); margin-bottom:8px; }
+.score-label { font-size:13px; color:var(--text2); }
+
+/* ══ AI ══ */
+.ai-box { background:var(--bg2); border:1px solid rgba(139,92,246,0.3); border-radius:12px; padding:20px; margin-bottom:20px; }
+.ai-box-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:13px; font-weight:600; }
+.ai-dot { width:8px; height:8px; border-radius:50%; background:var(--purple); animation:pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+.ai-content { font-size:13px; color:var(--text2); line-height:1.8; white-space:pre-wrap; }
+.ai-thinking { font-family:var(--font-mono); font-size:12px; color:var(--purple); animation:blink 1s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ══ Fixes ══ */
+.fix-list { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+.fix-item { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; gap:14px; }
+.fix-priority { font-family:var(--font-mono); font-size:10px; font-weight:700; padding:3px 8px; border-radius:4px; min-width:28px; text-align:center; height:fit-content; }
+.fix-priority.p1 { background:rgba(255,59,92,0.15);  color:var(--red);   }
+.fix-priority.p2 { background:rgba(255,176,32,0.15); color:var(--amber); }
+.fix-priority.p3 { background:rgba(22,197,83,0.15);  color:var(--green); }
+.fix-title { font-size:13px; font-weight:600; margin-bottom:4px; }
+.fix-desc  { font-size:12px; color:var(--text2); }
+.fix-time  { font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* ══ Log stream ══ */
+.log-stream { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px; max-height:200px; overflow-y:auto; font-family:var(--font-mono); font-size:11px; color:var(--text2); line-height:1.8; margin-bottom:20px; }
+.log-line { margin-bottom:2px; }
+.log-line .ts   { color:var(--muted); margin-right:8px; }
+.log-line .ok   { color:var(--green); }
+.log-line .warn { color:var(--amber); }
+.log-line .err  { color:var(--red);   }
+.log-line .info { color:var(--accent2); }
+
+/* ══ Divider ══ */
+.divider { font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin:24px 0 14px; display:flex; align-items:center; gap:10px; }
+.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ══ Empty ══ */
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; color:var(--muted); text-align:center; gap:12px; }
+.empty-icon { font-size:40px; opacity:0.4; }
+.empty-text { font-size:13px; }
+
+/* ══ Jobs table ══ */
+.jobs-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; margin-bottom:20px; }
+.jobs-table th { text-align:left; padding:7px 10px; background:var(--bg3); color:var(--text2); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid var(--border); }
+.jobs-table td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text); }
+.jobs-table tr:last-child td { border-bottom:none; }
+.tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; background:rgba(255,59,92,0.12); color:var(--red); }
+
+/* ══════════════════════════════════════
+   DETAIL DRAWER
+══════════════════════════════════════ */
+.drawer-backdrop {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.6); z-index:100;
+  backdrop-filter:blur(2px);
+  animation:fadeIn 0.2s ease;
+}
+.drawer-backdrop.open { display:block; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.drawer {
+  position:fixed; top:0; right:-520px; height:100vh;
+  width:520px; max-width:95vw;
+  background:var(--bg2); border-left:1px solid var(--border2);
+  z-index:101; overflow-y:auto;
+  transition:right 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:-8px 0 40px rgba(0,0,0,0.5);
+}
+.drawer.open { right:0; }
+
+.drawer-header {
+  position:sticky; top:0;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:20px 24px 16px;
+  display:flex; align-items:flex-start; gap:12px;
+  z-index:1;
+}
+.drawer-status-dot {
+  width:12px; height:12px; border-radius:50%; margin-top:4px; flex-shrink:0;
+}
+.drawer-status-dot.warn { background:var(--amber); box-shadow:0 0 8px rgba(255,176,32,0.5); }
+.drawer-status-dot.fail { background:var(--red);   box-shadow:0 0 8px rgba(255,59,92,0.5); }
+.drawer-status-dot.ok   { background:var(--green); box-shadow:0 0 8px rgba(22,197,83,0.5); }
+.drawer-title-wrap { flex:1; }
+.drawer-title { font-size:16px; font-weight:700; margin-bottom:2px; }
+.drawer-subtitle { font-size:12px; color:var(--text2); font-family:var(--font-mono); }
+.drawer-close {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--bg3); border:1px solid var(--border2);
+  color:var(--text2); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; flex-shrink:0;
+}
+.drawer-close:hover { background:var(--bg4); color:var(--text); }
+
+.drawer-body { padding:24px; }
+
+.drawer-section { margin-bottom:24px; }
+.drawer-section-title {
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  color:var(--muted); text-transform:uppercase; letter-spacing:0.1em;
+  margin-bottom:10px;
+}
+.drawer-text { font-size:13px; color:var(--text2); line-height:1.8; }
+.drawer-metric {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 0; border-bottom:1px solid var(--border);
+  font-family:var(--font-mono); font-size:12px;
+}
+.drawer-metric:last-child { border-bottom:none; }
+.drawer-metric-label { color:var(--text2); }
+.drawer-metric-val { font-weight:600; }
+.drawer-metric-val.warn { color:var(--amber); }
+.drawer-metric-val.fail { color:var(--red); }
+.drawer-metric-val.ok   { color:var(--green); }
+
+/* Steps */
+.steps { display:flex; flex-direction:column; gap:10px; }
+.step { display:flex; gap:12px; align-items:flex-start; }
+.step-num {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background:var(--bg4); border:1px solid var(--border2);
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text2); margin-top:1px;
+}
+.step-body { flex:1; }
+.step-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+.step-desc  { font-size:12px; color:var(--text2); line-height:1.6; }
+.step-code  {
+  margin-top:6px; padding:8px 12px;
+  background:var(--bg); border:1px solid var(--border2);
+  border-radius:6px; font-family:var(--font-mono);
+  font-size:11px; color:var(--accent2);
+  overflow-x:auto; white-space:nowrap;
+}
+
+/* Drawer buttons */
+.drawer-actions { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.btn-drawer {
+  width:100%; padding:11px 16px;
+  border-radius:var(--r); font-family:var(--font-mono);
+  font-size:12px; font-weight:700; cursor:pointer;
+  transition:all 0.2s; text-align:left;
+  display:flex; align-items:center; gap:8px;
+  text-decoration:none; border:none;
+}
+.btn-drawer.primary {
+  background:var(--accent); color:#000;
+}
+.btn-drawer.primary:hover { opacity:0.9; }
+.btn-drawer.secondary {
+  background:transparent; color:var(--text2);
+  border:1px solid var(--border2);
+}
+.btn-drawer.secondary:hover { border-color:var(--text2); color:var(--text); }
+.btn-drawer.danger {
+  background:rgba(255,59,92,0.12); color:var(--red);
+  border:1px solid rgba(255,59,92,0.25);
+}
+.btn-drawer.danger:hover { background:rgba(255,59,92,0.2); }
+
+.warn-banner {
+  padding:10px 14px; border-radius:var(--r);
+  background:rgba(255,176,32,0.08); border:1px solid rgba(255,176,32,0.2);
+  font-size:12px; color:var(--amber); line-height:1.6;
+  margin-bottom:16px;
+}
+.ok-banner {
+  padding:10px 14px; border-radius:var(--r);
+  background:rgba(22,197,83,0.08); border:1px solid rgba(22,197,83,0.2);
+  font-size:12px; color:var(--green); line-height:1.6;
+  margin-bottom:16px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🔬</div>
+      <div class="login-logo-text">
+        <span>Admin Bot</span>
+        ServiceNow Instance Health Check
+      </div>
+    </div>
+    <div class="login-title">Connect Your Instance</div>
+    <div class="login-subtitle">Enter your ServiceNow credentials to run a full 21-check health assessment.</div>
+    <div class="field">
+      <label>Instance URL</label>
+      <input id="f-instance" type="text" placeholder="yourinstance.service-now.com" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Username</label>
+        <input id="f-user" type="text" placeholder="admin" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="f-pass" type="password" placeholder="••••••••" />
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startHealthCheck()">⚡ Run Health Check</button>
+    <div class="login-note">⚠️ Credentials are never stored or sent anywhere except directly to your ServiceNow instance.</div>
+    <div class="cors-warning" id="cors-warn">
+      ❌ CORS Error — Your browser blocked the request.<br><br>
+      To fix: In ServiceNow go to <strong>System Web Services → REST → CORS Rules</strong> and add a rule for this page's origin.<br><br>
+      Or open Chrome with: <code>--disable-web-security --user-data-dir=/tmp/chrome</code>
+    </div>
+  </div>
+</div>
+
+<!-- RUN SCREEN -->
+<div id="screen-run" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">⚡ ADMIN BOT</div>
+    <div class="topbar-instance" id="tb-instance">—</div>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-btn" onclick="resetAll()">↺ New Check</button>
+  </div>
+  <div class="run-body">
+    <div class="left-panel">
+      <div class="phase-header">Phase 1 — Triage</div>
+      <div id="checks-triage"></div>
+      <div class="phase-header">Phase 2 — Database Tier</div>
+      <div id="checks-db"></div>
+      <div class="phase-header">Phase 2 — Application Tier</div>
+      <div id="checks-app"></div>
+      <div class="phase-header">Phase 2 — Transaction Tier</div>
+      <div id="checks-txn"></div>
+    </div>
+    <div class="right-panel" id="right-panel">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">Starting health check…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL DRAWER -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="detail-drawer">
+  <div class="drawer-header">
+    <div class="drawer-status-dot" id="drawer-dot"></div>
+    <div class="drawer-title-wrap">
+      <div class="drawer-title" id="drawer-title">—</div>
+      <div class="drawer-subtitle" id="drawer-subtitle">—</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let BASE='', USER='', PASS='', INSTANCE_NAME='';
+let results={};
+let logLines=[];
+
+// ══════════════════════════════════════════════════════
+// CHECKLIST SETUP
+// ══════════════════════════════════════════════════════
+const TRIAGE_CHECKS = [
+  {id:'t_syslog', label:'Syslog table size'},
+  {id:'t_errors', label:'Errors (last 5 min)'},
+  {id:'t_toxic',  label:'Toxic scheduled jobs'},
+];
+const DB_CHECKS = [
+  {id:'d1',label:'Syslog size'},{id:'d2',label:'Audit log size'},
+  {id:'d3',label:'Retention jobs'},{id:'d4',label:'Journal field size'},
+  {id:'d5',label:'Flow context size'},{id:'d6',label:'Connection pool errors'},
+  {id:'d7',label:'Deadlocks'},
+];
+const APP_CHECKS = [
+  {id:'a1',label:'High-frequency jobs'},{id:'a2',label:'Live error rate'},
+  {id:'a3',label:'Flow Designer errors'},{id:'a4',label:'Semaphore utilization'},
+];
+const TXN_CHECKS = [
+  {id:'t1',label:'T1 — Syslog 7-day scan'},{id:'t2',label:'T2 — P1/P2 Incidents'},
+  {id:'t3',label:'T3 — Flow Context 30d'}, {id:'t4',label:'T4 — Active Users'},
+];
+
+function initChecklist() {
+  renderChecks('checks-triage', TRIAGE_CHECKS);
+  renderChecks('checks-db', DB_CHECKS);
+  renderChecks('checks-app', APP_CHECKS);
+  renderChecks('checks-txn', TXN_CHECKS);
+}
+function renderChecks(cid, checks) {
+  document.getElementById(cid).innerHTML = checks.map(c=>`
+    <div class="check-item" id="ci-${c.id}">
+      <div class="check-icon pending" id="icon-${c.id}"></div>
+      <div class="check-label">${c.label}</div>
+      <div class="check-val" id="val-${c.id}"></div>
+    </div>`).join('');
+}
+function setCheckState(id, state, val='') {
+  const icon=document.getElementById('icon-'+id);
+  const valEl=document.getElementById('val-'+id);
+  if(!icon) return;
+  icon.className='check-icon '+state;
+  icon.textContent = state==='ok'?'✓':state==='warn'?'!':state==='fail'?'✕':state==='skip'?'-':'';
+  if(valEl && val) valEl.textContent=val;
+}
+
+// ══════════════════════════════════════════════════════
+// API
+// ══════════════════════════════════════════════════════
+async function snGet(path, params={}) {
+  const url=new URL(BASE+path);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const r=await fetch(url.toString(),{headers:{'Accept':'application/json','Authorization':'Basic '+btoa(USER+':'+PASS)}});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+async function getCount(table, query='') {
+  try {
+    const d=await snGet('/api/now/stats/'+table,{sysparm_count:'true',sysparm_query:query});
+    return parseInt(d?.result?.stats?.count||0);
+  } catch { return -1; }
+}
+async function getRecords(table, query='', fields='', limit=50) {
+  try {
+    const d=await snGet('/api/now/table/'+table,{sysparm_query:query,sysparm_fields:fields,sysparm_limit:String(limit)});
+    return d?.result||[];
+  } catch { return []; }
+}
+function fmt(n) {
+  if(n<0) return 'N/A';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
+  return String(n);
+}
+
+// ══════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════
+function log(msg, cls='info') {
+  const t=new Date().toLocaleTimeString('en',{hour12:false});
+  logLines.push(`<div class="log-line"><span class="ts">${t}</span><span class="${cls}">${msg}</span></div>`);
+  const el=document.getElementById('log-stream');
+  if(el){el.innerHTML=logLines.join('');el.scrollTop=el.scrollHeight;}
+}
+
+// ══════════════════════════════════════════════════════
+// MAIN
+// ══════════════════════════════════════════════════════
+async function startHealthCheck() {
+  let inst=document.getElementById('f-instance').value.trim();
+  USER=document.getElementById('f-user').value.trim();
+  PASS=document.getElementById('f-pass').value.trim();
+  if(!inst||!USER||!PASS){alert('Please fill in all fields.');return;}
+  if(!inst.startsWith('http')) inst='https://'+inst;
+  if(inst.endsWith('/')) inst=inst.slice(0,-1);
+  BASE=inst;
+  INSTANCE_NAME=inst.replace('https://','').replace('http://','');
+
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-run').classList.add('active');
+  document.getElementById('tb-instance').textContent=INSTANCE_NAME;
+  initChecklist();
+
+  const rp=document.getElementById('right-panel');
+  rp.innerHTML=`
+    <div class="section-title">Health Check Running</div>
+    <div class="section-sub">Phase 1 — Quick Triage (read-only, no changes made)</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="log-stream" id="log-stream"></div>
+    <div id="results-area"></div>`;
+  setProgress(2);
+  try {
+    await runPhase1();
+    await runPhase2();
+    await runBenchmark();
+    await renderFinalReport();
+  } catch(e) {
+    if(e.message&&e.message.includes('Failed to fetch')) {
+      document.getElementById('cors-warn').style.display='block';
+      document.getElementById('screen-run').classList.remove('active');
+      document.getElementById('screen-login').classList.add('active');
+    } else { log('Fatal error: '+e.message,'err'); }
+  }
+}
+function setProgress(pct){const el=document.getElementById('progress-bar');if(el)el.style.width=pct+'%';}
+
+// ══════════════════════════════════════════════════════
+// PHASE 1 — TRIAGE
+// ══════════════════════════════════════════════════════
+async function runPhase1() {
+  log('Starting Phase 1 — Quick Triage','info');
+  setCheckState('t_syslog','running');
+  const sc=await getCount('syslog'); results.syslogCount=sc;
+  const ss=sc>20e6?'fail':sc>5e6?'warn':'ok';
+  setCheckState('t_syslog',ss,fmt(sc));
+  log(`Syslog: ${fmt(sc)} records — ${ss}`,ss==='ok'?'ok':ss==='warn'?'warn':'err');
+  setProgress(10);
+
+  setCheckState('t_errors','running');
+  const fma=new Date(Date.now()-5*60000);
+  const errQ=`sys_created_on>${fma.toISOString().replace('T',' ').slice(0,19)}^level=error^ORlevel=critical`;
+  const ec=await getCount('syslog',errQ); results.recentErrors=ec;
+  const es=ec>100?'fail':ec>20?'warn':'ok';
+  setCheckState('t_errors',es,fmt(ec));
+  log(`Recent errors (5min): ${fmt(ec)} — ${es}`,es==='ok'?'ok':es==='warn'?'warn':'err');
+  setProgress(20);
+
+  setCheckState('t_toxic','running');
+  const tj=await getRecords('sysauto_script','active=true^run_period<60','name,run_period,next_action',100);
+  results.toxicJobs=tj;
+  const ts=tj.length>0?'fail':'ok';
+  setCheckState('t_toxic',ts,tj.length>0?tj.length+' found':'None');
+  log(`Toxic jobs (<60s): ${tj.length} found — ${ts}`,ts==='ok'?'ok':'err');
+  setProgress(30);
+
+  results.path=(sc>20e6||ec>500||tj.length>10)?2:1;
+  log(`Triage complete → PATH ${results.path} (${results.path===2?'Emergency':'Standard'})`,results.path===2?'warn':'ok');
+  appendToResults(renderTriageSection());
+}
+
+function renderTriageSection() {
+  const pc=results.path===1?'path1':'path2';
+  const pl=results.path===1?'✓ PATH 1 — Standard Health Check':'⚠ PATH 2 — Emergency Assessment';
+  return `
+    <div class="divider">Triage Results</div>
+    <div class="triage-box">
+      <div class="triage-row">
+        <span class="triage-label">Syslog table size</span>
+        <span class="triage-result ${results.syslogCount>20e6?'fail':results.syslogCount>5e6?'warn':'ok'}">${fmt(results.syslogCount)} records</span>
+      </div>
+      <div class="triage-row">
+        <span class="triage-label">Errors in last 5 minutes</span>
+        <span class="triage-result ${results.recentErrors>100?'fail':results.recentErrors>20?'warn':'ok'}">${fmt(results.recentErrors)}</span>
+      </div>
+      <div class="triage-row">
+        <span class="triage-label">Toxic scheduled jobs</span>
+        <span class="triage-result ${results.toxicJobs.length>0?'fail':'ok'}">${results.toxicJobs.length===0?'None':results.toxicJobs.length+' found'}</span>
+      </div>
+      <div><span class="path-badge ${pc}">${pl}</span></div>
+    </div>
+    ${results.toxicJobs.length>0?renderToxicTable():''}`;
+}
+
+function renderToxicTable() {
+  return `
+    <div class="divider">Toxic Jobs (run interval &lt; 60s)</div>
+    <table class="jobs-table">
+      <thead><tr><th>Job Name</th><th>Interval (s)</th><th>Status</th></tr></thead>
+      <tbody>${results.toxicJobs.slice(0,20).map(j=>`
+        <tr><td>${j.name||'N/A'}</td><td>${j.run_period||'N/A'}</td><td><span class="tag">TOXIC</span></td></tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ══════════════════════════════════════════════════════
+// PHASE 2
+// ══════════════════════════════════════════════════════
+async function runPhase2() {
+  log('Starting Phase 2 — Full 21-Check Assessment','info');
+  results.db={}; results.app={};
+
+  setCheckState('d1',results.syslogCount>20e6?'fail':results.syslogCount>5e6?'warn':'ok',fmt(results.syslogCount));
+  results.db.d1=results.syslogCount;
+
+  setCheckState('d2','running');
+  const ac=await getCount('sys_audit'); results.db.d2=ac;
+  const d2s=ac>10e6?'fail':ac>5e6?'warn':'ok';
+  setCheckState('d2',d2s,fmt(ac));
+  log(`Audit log: ${fmt(ac)} — ${d2s}`,d2s==='ok'?'ok':d2s==='warn'?'warn':'err');
+  setProgress(38);
+
+  setCheckState('d3','running');
+  const rj=await getRecords('sysauto_script','active=true^nameLIKEpurge^ORnameLIKEclean^ORnameLIKEretention','name',10);
+  results.db.d3=rj;
+  const d3s=rj.length===0?'warn':'ok';
+  setCheckState('d3',d3s,rj.length+' found');
+  log(`Retention jobs: ${rj.length} found — ${d3s}`,d3s==='ok'?'ok':'warn');
+  setProgress(44);
+
+  setCheckState('d4','running');
+  const jc=await getCount('sys_journal_field'); results.db.d4=jc;
+  const d4s=jc>5e6?'fail':jc>2e6?'warn':'ok';
+  setCheckState('d4',d4s,fmt(jc));
+  log(`Journal fields: ${fmt(jc)} — ${d4s}`,d4s==='ok'?'ok':d4s==='warn'?'warn':'err');
+  setProgress(48);
+
+  setCheckState('d5','running');
+  const fcc=await getCount('sys_flow_context'); results.db.d5=fcc;
+  const d5s=fcc>1e6?'fail':fcc>500e3?'warn':'ok';
+  setCheckState('d5',d5s,fmt(fcc));
+  log(`Flow context: ${fmt(fcc)} — ${d5s}`,d5s==='ok'?'ok':d5s==='warn'?'warn':'err');
+  setProgress(52);
+
+  setCheckState('d6','running');
+  const ce=await getCount('syslog','messageLIKEconnection pool^sys_created_onRELATIVEGT@hour@ago@1');
+  results.db.d6=ce;
+  setCheckState('d6',ce>0?'fail':'ok',ce>0?ce+' errors':'None');
+  log(`Connection pool errors: ${ce}`,ce>0?'err':'ok');
+  setProgress(56);
+
+  setCheckState('d7','running');
+  const dl=await getCount('syslog','messageLIKEdeadlock^sys_created_onRELATIVEGT@hour@ago@1');
+  results.db.d7=dl;
+  setCheckState('d7',dl>0?'fail':'ok',dl>0?dl+' found':'None');
+  log(`Deadlocks: ${dl}`,dl>0?'err':'ok');
+  setProgress(60);
+
+  setCheckState('a1','running');
+  const hf=await getRecords('sysauto_script','active=true^run_period<60','name,run_period',50);
+  results.app.a1=hf;
+  setCheckState('a1',hf.length>0?'fail':'ok',hf.length+' jobs');
+  log(`High-freq jobs: ${hf.length}`,hf.length>0?'err':'ok');
+  setProgress(65);
+
+  setCheckState('a2',results.recentErrors>100?'fail':results.recentErrors>20?'warn':'ok',fmt(results.recentErrors)+'/5min');
+  results.app.a2=results.recentErrors;
+
+  setCheckState('a3','running');
+  const fe=await getCount('sys_flow_context','status=error^sys_created_onRELATIVEGT@hour@ago@1');
+  results.app.a3=fe;
+  setCheckState('a3',fe>10?'fail':fe>0?'warn':'ok',fe+' errors');
+  log(`Flow errors (1hr): ${fe}`,fe>10?'err':fe>0?'warn':'ok');
+  setProgress(72);
+
+  setCheckState('a4','running');
+  const sem=await getRecords('sys_semaphore','','waiting,sleeping,locked',1);
+  results.app.a4=sem.length>0?sem[0]:null;
+  setCheckState('a4','ok',results.app.a4?'OK':'N/A');
+  log('Semaphore: checked','ok');
+  setProgress(76);
+
+  appendToResults(renderDBSection());
+  appendToResults(renderAppSection());
+}
+
+// ══════════════════════════════════════════════════════
+// CARD RENDERING — with onclick
+// ══════════════════════════════════════════════════════
+function makeCard(id, label, val, state, desc) {
+  const clickable = (state==='warn'||state==='fail') ? 'clickable' : '';
+  const hint = clickable ? '<span class="card-click-hint">click to fix →</span>' : '';
+  const onclick = clickable ? `onclick="openCardDetail('${id}')"` : '';
+  return `
+    <div class="card ${state} ${clickable}" ${onclick}>
+      ${hint}
+      <div class="card-header">
+        <span class="card-badge ${state}">${state.toUpperCase()}</span>
+        <span class="card-name">${label}</span>
+      </div>
+      <div class="card-value ${state}">${val}</div>
+      <div class="card-desc">${desc}</div>
+    </div>`;
+}
+
+function renderDBSection() {
+  const items = [
+    {id:'d1', label:'Syslog Records',       val:fmt(results.db.d1), state:results.db.d1>20e6?'fail':results.db.d1>5e6?'warn':'ok', desc:'Primary log table. Over 20M = slow queries everywhere.'},
+    {id:'d2', label:'Audit Log Records',    val:fmt(results.db.d2), state:results.db.d2>10e6?'fail':results.db.d2>5e6?'warn':'ok', desc:'Field-change history. Grows silently over time.'},
+    {id:'d3', label:'Retention Jobs',       val:results.db.d3.length+' found', state:results.db.d3.length===0?'warn':'ok',         desc:'Scheduled cleanup jobs. None = tables grow forever.'},
+    {id:'d4', label:'Journal Field Records',val:fmt(results.db.d4), state:results.db.d4>5e6?'fail':results.db.d4>2e6?'warn':'ok', desc:'Work notes & comments. Rarely purged on older instances.'},
+    {id:'d5', label:'Flow Context Records', val:fmt(results.db.d5), state:results.db.d5>1e6?'fail':results.db.d5>500e3?'warn':'ok',desc:'Automation run history. Old records pile up fast.'},
+    {id:'d6', label:'Connection Pool Errors',val:results.db.d6>0?results.db.d6+' errors':'None', state:results.db.d6>0?'fail':'ok', desc:'Failed DB connections in last hour.'},
+    {id:'d7', label:'Deadlocks',            val:results.db.d7>0?results.db.d7+' found':'None', state:results.db.d7>0?'fail':'ok',  desc:'Database transaction conflicts causing timeouts.'},
+  ];
+  return `<div class="divider">Database Tier</div><div class="cards-grid">${items.map(i=>makeCard(i.id,i.label,i.val,i.state,i.desc)).join('')}</div>`;
+}
+
+function renderAppSection() {
+  const items = [
+    {id:'a1', label:'High-Frequency Jobs',  val:results.app.a1.length+' jobs',      state:results.app.a1.length>0?'fail':'ok',            desc:'Jobs running faster than every 60 seconds.'},
+    {id:'a2', label:'Live Error Rate',       val:fmt(results.app.a2)+'/5min',        state:results.app.a2>100?'fail':results.app.a2>20?'warn':'ok', desc:'Active errors firing right now.'},
+    {id:'a3', label:'Flow Designer Errors',  val:results.app.a3+' errors (1hr)',     state:results.app.a3>10?'fail':results.app.a3>0?'warn':'ok',   desc:'Failed automations in the last hour.'},
+    {id:'a4', label:'Semaphore',             val:'Checked',                          state:'ok',                                           desc:'Thread capacity for processing new requests.'},
+  ];
+  return `<div class="divider">Application Tier</div><div class="cards-grid">${items.map(i=>makeCard(i.id,i.label,i.val,i.state,i.desc)).join('')}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// BENCHMARK
+// ══════════════════════════════════════════════════════
+async function runBenchmark() {
+  log('Starting Transaction Tier — 5×4 Benchmark','info');
+  setProgress(80);
+  const tests=[
+    {id:'t1',label:'T1 — Syslog 7-day scan', table:'syslog',         query:'sys_created_onRELATIVEGT@day@ago@7'},
+    {id:'t2',label:'T2 — P1/P2 Incidents',   table:'incident',       query:'priority<=2^active=true'},
+    {id:'t3',label:'T3 — Flow Context 30d',  table:'sys_flow_context',query:'sys_created_onRELATIVEGT@day@ago@30'},
+    {id:'t4',label:'T4 — Active Users',       table:'sys_user',       query:'active=true'},
+  ];
+  results.bench={};
+  for(const t of tests) {
+    setCheckState(t.id,'running');
+    const times=[];
+    for(let r=0;r<5;r++){const t0=performance.now();await getCount(t.table,t.query);times.push(performance.now()-t0);}
+    const avg=times.reduce((a,b)=>a+b,0)/times.length;
+    const variance=Math.max(...times)-Math.min(...times);
+    results.bench[t.id]={avg,variance,times};
+    const s=avg>8000?'fail':avg>3000?'warn':'ok';
+    setCheckState(t.id,s,Math.round(avg)+'ms');
+    log(`${t.id.toUpperCase()}: avg ${Math.round(avg)}ms ±${Math.round(variance)}ms — ${s}`,s==='ok'?'ok':s==='warn'?'warn':'err');
+    setProgress(80+(Object.keys(results.bench).length/4)*15);
+  }
+  const total=Object.values(results.bench).reduce((s,v)=>s+v.avg,0);
+  results.benchTotal=total;
+  results.grade=total<5000?'EXCELLENT':total<10000?'GOOD':total<20000?'FAIR':total<40000?'POOR':'CRITICAL';
+  log(`Benchmark total: ${Math.round(total)}ms — ${results.grade}`,results.grade==='EXCELLENT'||results.grade==='GOOD'?'ok':'warn');
+  appendToResults(renderBenchmarkSection());
+  setProgress(96);
+}
+
+function renderBenchmarkSection() {
+  const gc={EXCELLENT:'var(--green)',GOOD:'var(--green)',FAIR:'var(--amber)',POOR:'var(--red)',CRITICAL:'var(--red)'};
+  const tests=['t1','t2','t3','t4'];
+  const labels={t1:'T1 — Syslog 7-day scan',t2:'T2 — P1/P2 Incidents',t3:'T3 — Flow Context 30d',t4:'T4 — Active Users'};
+  const maxMs=Math.max(...tests.map(t=>results.bench[t]?.avg||0));
+  return `
+    <div class="divider">Transaction Tier — Benchmark</div>
+    <div class="score-total">
+      <div class="score-grade" style="color:${gc[results.grade]}">${results.grade}</div>
+      <div class="score-ms">${Math.round(results.benchTotal)}ms total</div>
+      <div class="score-label">5 × 4 benchmark (${Object.values(results.bench).reduce((s,v)=>s+v.times.length,0)} queries)</div>
+    </div>
+    <table class="bench-table">
+      <thead><tr><th>Test</th><th>Avg</th><th>Variance</th><th>Score</th></tr></thead>
+      <tbody>
+        ${tests.map(t=>{
+          const b=results.bench[t]; if(!b) return '';
+          const pct=Math.min(100,(b.avg/maxMs)*100);
+          const color=b.avg>8000?'var(--red)':b.avg>3000?'var(--amber)':'var(--green)';
+          return `<tr>
+            <td>${labels[t]}</td>
+            <td style="color:${color};font-weight:600">${Math.round(b.avg)}ms</td>
+            <td style="color:var(--muted)">±${Math.round(b.variance)}ms</td>
+            <td><div class="bench-bar-wrap"><div class="bench-bar" style="width:${pct}%;background:${color}"></div></div></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ══════════════════════════════════════════════════════
+// FINAL REPORT
+// ══════════════════════════════════════════════════════
+async function renderFinalReport() {
+  setProgress(100);
+  log('Health check complete. Generating analysis…','info');
+  const fixes=buildFixRecommendations();
+  results.fixes=fixes;
+  appendToResults(renderFixesSection(fixes));
+  appendToResults(`<div class="ai-box" id="ai-box">
+    <div class="ai-box-header"><div class="ai-dot"></div>AI Analysis</div>
+    <div class="ai-content" id="ai-content"><span class="ai-thinking">Analyzing results…</span></div>
+  </div>`);
+  await runAIAnalysis();
+}
+
+function buildFixRecommendations() {
+  const fixes=[];
+  if(results.toxicJobs.length>0) fixes.push({priority:'P1',title:`Deactivate ${results.toxicJobs.length} toxic scheduled job(s)`,desc:'Jobs running faster than every 60 seconds hammer the database.',time:'2 min per job'});
+  if(results.db.d1>20e6) fixes.push({priority:'P1',title:'Syslog table critically bloated',desc:`${fmt(results.db.d1)} records. Create a retention policy to auto-delete logs older than 30 days.`,time:'10 min — create cleanup job'});
+  if(results.recentErrors>100) fixes.push({priority:'P1',title:`${fmt(results.recentErrors)} errors in last 5 minutes`,desc:'Active error flood detected. Investigate source.',time:'15–30 min investigation'});
+  if(results.db.d5>1e6) fixes.push({priority:'P2',title:'Flow context table oversized',desc:`${fmt(results.db.d5)} old flow execution records. Add cleanup job for contexts older than 90 days.`,time:'5 min'});
+  if(results.db.d2>10e6) fixes.push({priority:'P2',title:'Audit log approaching critical size',desc:`${fmt(results.db.d2)} records. Configure sys_audit retention policy.`,time:'5 min'});
+  if(results.db.d3.length===0) fixes.push({priority:'P2',title:'No retention jobs configured',desc:'Tables will grow indefinitely. Create purge jobs for syslog, sys_audit, and sys_flow_context.',time:'15 min'});
+  if(results.app.a3>10) fixes.push({priority:'P2',title:`${results.app.a3} Flow Designer errors in last hour`,desc:'Broken automations are likely cascading. Review failed flows.',time:'20–40 min'});
+  if(results.db.d6>0) fixes.push({priority:'P1',title:'Connection pool errors detected',desc:'Database under serious stress.',time:'Urgent'});
+  if(results.db.d7>0) fixes.push({priority:'P1',title:'Deadlocks detected',desc:'Database transactions blocking each other.',time:'Urgent'});
+  if(fixes.length===0) fixes.push({priority:'P3',title:'Instance looks healthy',desc:'No critical issues detected.',time:'No action needed'});
+  return fixes;
+}
+
+function renderFixesSection(fixes) {
+  const pc={P1:'p1',P2:'p2',P3:'p3'};
+  return `
+    <div class="divider">Recommended Fixes</div>
+    <div class="fix-list">
+      ${fixes.map(f=>`
+        <div class="fix-item">
+          <div class="fix-priority ${pc[f.priority]}">${f.priority}</div>
+          <div class="fix-body">
+            <div class="fix-title">${f.title}</div>
+            <div class="fix-desc">${f.desc}</div>
+            <div class="fix-time">⏱ ${f.time}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function runAIAnalysis() {
+  const summary=buildSummaryForAI();
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        system:`You are the ServiceNow Admin Bot — an expert at diagnosing and optimizing ServiceNow demo instances. Analyze health check data and provide clear, actionable insights in 3–4 paragraphs. Be direct and specific. Lead with the most important finding.`,
+        messages:[{role:'user',content:`Analyze this health check for ${INSTANCE_NAME}:\n\n${summary}\n\nProvide a concise diagnostic summary and prioritized action plan.`}]
+      })
+    });
+    const d=await r.json();
+    document.getElementById('ai-content').textContent=d?.content?.[0]?.text||'Analysis unavailable.';
+  } catch {
+    document.getElementById('ai-content').textContent=
+      `Instance: ${INSTANCE_NAME}\n\nGrade: ${results.grade} (${Math.round(results.benchTotal)}ms)\n\n`+
+      `Critical findings: ${results.fixes.filter(f=>f.priority==='P1').length} P1 issues, ${results.fixes.filter(f=>f.priority==='P2').length} P2 issues.\n\n`+
+      (results.toxicJobs.length>0?`⚠ ${results.toxicJobs.length} toxic scheduled jobs detected — most common cause of demo instance slowdowns.\n\n`:'')+
+      (results.db.d1>5e6?`⚠ Syslog at ${fmt(results.db.d1)} records — cleanup job recommended.\n\n`:'')+
+      `T+48hr benchmark recommended after applying fixes.`;
+  }
+}
+
+function buildSummaryForAI() {
+  return [
+    `TRIAGE: syslog=${fmt(results.syslogCount)}, errors_5min=${results.recentErrors}, toxic_jobs=${results.toxicJobs.length}`,
+    `PATH: ${results.path}`,
+    `DB: audit=${fmt(results.db.d2)}, journal=${fmt(results.db.d4)}, flow_ctx=${fmt(results.db.d5)}, conn_errors=${results.db.d6}, deadlocks=${results.db.d7}, retention_jobs=${results.db.d3.length}`,
+    `APP: hf_jobs=${results.app.a1.length}, flow_errors=${results.app.a3}`,
+    `BENCH: ${Object.entries(results.bench||{}).map(([k,v])=>`${k}=${Math.round(v.avg)}ms±${Math.round(v.variance)}ms`).join(', ')}`,
+    `TOTAL: ${Math.round(results.benchTotal)}ms — ${results.grade}`,
+    `FIXES: ${results.fixes.map(f=>`${f.priority}:${f.title}`).join('; ')}`
+  ].join('\n');
+}
+
+// ══════════════════════════════════════════════════════
+// DETAIL DRAWER
+// ══════════════════════════════════════════════════════
+const CARD_DETAILS = {
+  d1: {
+    title:'Syslog Records',
+    subtitle:'sys_log table — primary platform log',
+    getState: ()=> results.db.d1>20e6?'fail':results.db.d1>5e6?'warn':'ok',
+    getContent: ()=> {
+      const n=results.db.d1; const s=n>20e6?'fail':n>5e6?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">The syslog table stores every platform event — errors, warnings, background job activity, UI actions. It grows constantly and is never automatically purged without a retention job. It's the #1 cause of slow demo instances.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Metrics</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Total Records</span><span class="drawer-metric-val ${s}">${fmt(n)}</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Healthy threshold</span><span class="drawer-metric-val ok">Under 5M</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Critical threshold</span><span class="drawer-metric-val fail">Over 20M</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">How to Fix — Create a Cleanup Job</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Open Scheduled Jobs</div><div class="step-desc">In ServiceNow Filter Navigator, type <strong>sysauto_script.list</strong> and press Enter.</div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Create New Job</div><div class="step-desc">Click <strong>New</strong>. Name it "Purge Old Syslog Records". Set Run: <strong>Daily</strong>.</div></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Add This Script</div>
+              <div class="step-code">var gr = new GlideRecord('syslog');<br>gr.addQuery('sys_created_on', '&lt;', gs.daysAgoStart(30));<br>gr.deleteMultiple();</div>
+            </div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Save and Run</div><div class="step-desc">Click <strong>Submit</strong>, then <strong>Execute Now</strong> to run immediately.</div></div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer primary" href="${BASE}/sysauto_script.do?sys_id=-1" target="_blank">🔗 Open New Scheduled Job in ServiceNow</a>
+          <a class="btn-drawer secondary" href="${BASE}/syslog_list.do" target="_blank">👁 Browse Syslog Table</a>
+        </div>`:`<div class="ok-banner">✓ Syslog is within the healthy range. No action needed.</div>`}`;
+    }
+  },
+  d2: {
+    title:'Audit Log Records',
+    subtitle:'sys_audit table — field change history',
+    getState: ()=> results.db.d2>10e6?'fail':results.db.d2>5e6?'warn':'ok',
+    getContent: ()=> {
+      const n=results.db.d2; const s=n>10e6?'fail':n>5e6?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">The sys_audit table records every field change on the instance — who changed what, when. It grows silently and is rarely purged. On older instances it can become enormous.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Metrics</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Total Records</span><span class="drawer-metric-val ${s}">${fmt(n)}</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Warning threshold</span><span class="drawer-metric-val warn">Over 5M</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Critical threshold</span><span class="drawer-metric-val fail">Over 10M</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">How to Fix</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Open Scheduled Scripts</div><div class="step-desc">Filter Navigator → <strong>sysauto_script.list</strong></div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Create Purge Job</div><div class="step-desc">New job named "Purge Old Audit Records". Run: <strong>Weekly</strong>.</div></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Add Script</div>
+              <div class="step-code">var gr = new GlideRecord('sys_audit');<br>gr.addQuery('sys_created_on', '&lt;', gs.daysAgoStart(90));<br>gr.deleteMultiple();</div>
+            </div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer primary" href="${BASE}/sysauto_script.do?sys_id=-1" target="_blank">🔗 Create Cleanup Job in ServiceNow</a>
+        </div>`:`<div class="ok-banner">✓ Audit log is within the healthy range.</div>`}`;
+    }
+  },
+  d3: {
+    title:'Retention Jobs',
+    subtitle:'sysauto_script — scheduled cleanup jobs',
+    getState: ()=> results.db.d3.length===0?'warn':'ok',
+    getContent: ()=> {
+      const n=results.db.d3.length;
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">Retention jobs are scheduled scripts that automatically delete old records from large tables (syslog, sys_audit, sys_flow_context). Without them, tables grow indefinitely and performance degrades over time.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Status</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Cleanup jobs found</span><span class="drawer-metric-val ${n===0?'warn':'ok'}">${n===0?'None detected':n+' found'}</span></div>
+        </div>
+        ${n===0?`
+        <div class="warn-banner">⚠ No retention jobs detected. Tables on this instance will grow indefinitely until performance degrades.</div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Recommended — Create 3 Retention Jobs</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Syslog Purge (Daily)</div>
+              <div class="step-code">var g=new GlideRecord('syslog');<br>g.addQuery('sys_created_on','&lt;',gs.daysAgoStart(30));<br>g.deleteMultiple();</div>
+            </div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Audit Log Purge (Weekly)</div>
+              <div class="step-code">var g=new GlideRecord('sys_audit');<br>g.addQuery('sys_created_on','&lt;',gs.daysAgoStart(90));<br>g.deleteMultiple();</div>
+            </div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Flow Context Purge (Weekly)</div>
+              <div class="step-code">var g=new GlideRecord('sys_flow_context');<br>g.addQuery('sys_created_on','&lt;',gs.daysAgoStart(90));<br>g.deleteMultiple();</div>
+            </div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer primary" href="${BASE}/sysauto_script.do?sys_id=-1" target="_blank">🔗 Create First Retention Job in ServiceNow</a>
+        </div>`:`
+        <div class="ok-banner">✓ ${n} retention job(s) found. Tables are being cleaned up automatically.</div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Existing Jobs</div>
+          ${results.db.d3.map(j=>`<div class="drawer-metric"><span class="drawer-metric-label">${j.name||'Unnamed'}</span><span class="drawer-metric-val ok">Active</span></div>`).join('')}
+        </div>`}`;
+    }
+  },
+  d4: {
+    title:'Journal Field Records',
+    subtitle:'sys_journal_field — work notes & comments',
+    getState: ()=> results.db.d4>5e6?'fail':results.db.d4>2e6?'warn':'ok',
+    getContent: ()=> {
+      const n=results.db.d4; const s=n>5e6?'fail':n>2e6?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">The sys_journal_field table stores all work notes and comments on records. On active instances it accumulates very large amounts of data that is rarely purged.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Metrics</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Total Records</span><span class="drawer-metric-val ${s}">${fmt(n)}</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Warning threshold</span><span class="drawer-metric-val warn">Over 2M</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Critical threshold</span><span class="drawer-metric-val fail">Over 5M</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">How to Fix</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create a Scheduled Script</div><div class="step-desc">Filter Navigator → <strong>sysauto_script.list</strong> → New</div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Add Script</div>
+              <div class="step-code">var g=new GlideRecord('sys_journal_field');<br>g.addQuery('sys_created_on','&lt;',gs.daysAgoStart(180));<br>g.deleteMultiple();</div>
+            </div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer primary" href="${BASE}/sysauto_script.do?sys_id=-1" target="_blank">🔗 Create Cleanup Job</a>
+        </div>`:`<div class="ok-banner">✓ Journal field table is within healthy range.</div>`}`;
+    }
+  },
+  d5: {
+    title:'Flow Context Records',
+    subtitle:'sys_flow_context — automation run history',
+    getState: ()=> results.db.d5>1e6?'fail':results.db.d5>500e3?'warn':'ok',
+    getContent: ()=> {
+      const n=results.db.d5; const s=n>1e6?'fail':n>500e3?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">Every time a Flow Designer flow or automation runs, it creates a context record. Old records pile up fast on active instances and directly slow down the T3 benchmark query.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Metrics</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Total Records</span><span class="drawer-metric-val ${s}">${fmt(n)}</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Warning threshold</span><span class="drawer-metric-val warn">Over 500K</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Critical threshold</span><span class="drawer-metric-val fail">Over 1M</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">How to Fix</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create Scheduled Script</div><div class="step-desc">Filter Navigator → <strong>sysauto_script.list</strong> → New. Run: Weekly.</div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Add Script</div>
+              <div class="step-code">var g=new GlideRecord('sys_flow_context');<br>g.addQuery('sys_created_on','&lt;',gs.daysAgoStart(90));<br>g.addQuery('status','!=','waiting');<br>g.deleteMultiple();</div>
+            </div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer primary" href="${BASE}/sysauto_script.do?sys_id=-1" target="_blank">🔗 Create Cleanup Job</a>
+          <a class="btn-drawer secondary" href="${BASE}/sys_flow_context_list.do" target="_blank">👁 Browse Flow Contexts</a>
+        </div>`:`<div class="ok-banner">✓ Flow context table is within healthy range.</div>`}`;
+    }
+  },
+  d6: {
+    title:'Connection Pool Errors',
+    subtitle:'syslog — DB connection failures (last 1hr)',
+    getState: ()=> results.db.d6>0?'fail':'ok',
+    getContent: ()=> {
+      const n=results.db.d6;
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">Connection pool errors occur when the database runs out of available connections to serve new requests. This indicates the database is under serious stress — typically caused by runaway queries or too many concurrent operations.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Status</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Errors in last hour</span><span class="drawer-metric-val ${n>0?'fail':'ok'}">${n>0?n+' errors':'None'}</span></div>
+        </div>
+        ${n>0?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">Immediate Steps</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Check for runaway jobs</div><div class="step-desc">Look for toxic scheduled jobs (<60s interval) and disable them immediately.</div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Review syslog errors</div><div class="step-desc">Search syslog for "connection pool" to find the exact source and timing.</div></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Restart if needed</div><div class="step-desc">For PDI instances, a restart via DemoHub or HI may resolve the immediate issue.</div></div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer danger" href="${BASE}/syslog_list.do?sysparm_query=messageLIKEconnection+pool^ORDERBYDESCsys_created_on" target="_blank">🔍 View Connection Pool Errors in Syslog</a>
+        </div>`:`<div class="ok-banner">✓ No connection pool errors in the last hour.</div>`}`;
+    }
+  },
+  d7: {
+    title:'Deadlocks',
+    subtitle:'syslog — DB transaction conflicts (last 1hr)',
+    getState: ()=> results.db.d7>0?'fail':'ok',
+    getContent: ()=> {
+      const n=results.db.d7;
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">A deadlock occurs when two database operations each hold a lock the other needs, causing both to wait indefinitely. ServiceNow resolves them by rolling one back, but they cause transaction failures and can indicate a deeper concurrency problem.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Status</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Deadlocks in last hour</span><span class="drawer-metric-val ${n>0?'fail':'ok'}">${n>0?n+' found':'None'}</span></div>
+        </div>
+        ${n>0?`
+        <div class="drawer-actions">
+          <a class="btn-drawer danger" href="${BASE}/syslog_list.do?sysparm_query=messageLIKEdeadlock^ORDERBYDESCsys_created_on" target="_blank">🔍 View Deadlock Errors in Syslog</a>
+        </div>`:`<div class="ok-banner">✓ No deadlocks detected in the last hour.</div>`}`;
+    }
+  },
+  a1: {
+    title:'High-Frequency Jobs',
+    subtitle:'sysauto_script — jobs running faster than every 60s',
+    getState: ()=> results.app.a1.length>0?'fail':'ok',
+    getContent: ()=> {
+      const jobs=results.app.a1;
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">Scheduled jobs running more frequently than every 60 seconds continuously hammer the database. A single job at 30-second intervals fires 2,880 times per day. These are the most common cause of performance degradation on demo instances.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Found ${jobs.length} Toxic Job(s)</div>
+          ${jobs.map(j=>`
+            <div class="drawer-metric">
+              <span class="drawer-metric-label">${j.name||'Unnamed'}</span>
+              <span class="drawer-metric-val fail">${j.run_period}s interval</span>
+            </div>`).join('')}
+        </div>
+        ${jobs.length>0?`
+        <div class="drawer-section">
+          <div class="drawer-section-title">How to Fix</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Open Scheduled Jobs</div><div class="step-desc">Filter Navigator → <strong>sysauto_script.list</strong></div></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Find Each Toxic Job</div><div class="step-desc">Search by name. Open the record.</div></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Option A — Deactivate</div><div class="step-desc">Uncheck <strong>Active</strong> if the job is not needed.</div></div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Option B — Raise Interval</div><div class="step-desc">Change <strong>Run Period</strong> to 3600 seconds (1 hour) or higher.</div></div></div>
+          </div>
+        </div>
+        <div class="drawer-actions">
+          <a class="btn-drawer danger" href="${BASE}/sysauto_script_list.do?sysparm_query=active=true^run_period<60^ORDERBYrun_period" target="_blank">🔍 View All Toxic Jobs in ServiceNow</a>
+        </div>`:`<div class="ok-banner">✓ No high-frequency jobs detected.</div>`}`;
+    }
+  },
+  a2: {
+    title:'Live Error Rate',
+    subtitle:'syslog — errors in the last 5 minutes',
+    getState: ()=> results.app.a2>100?'fail':results.app.a2>20?'warn':'ok',
+    getContent: ()=> {
+      const n=results.app.a2; const s=n>100?'fail':n>20?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">This counts error and critical level entries in syslog from the last 5 minutes. A high rate indicates something is actively broken and generating a continuous error stream right now.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Rate</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Errors (last 5 min)</span><span class="drawer-metric-val ${s}">${fmt(n)}</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Warning threshold</span><span class="drawer-metric-val warn">Over 20</span></div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Critical threshold</span><span class="drawer-metric-val fail">Over 100</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-actions">
+          <a class="btn-drawer danger" href="${BASE}/syslog_list.do?sysparm_query=level=error^ORlevel=critical^ORDERBYDESCsys_created_on" target="_blank">🔍 View Recent Errors in Syslog</a>
+        </div>`:`<div class="ok-banner">✓ Error rate is within normal range.</div>`}`;
+    }
+  },
+  a3: {
+    title:'Flow Designer Errors',
+    subtitle:'sys_flow_context — failed automations (last 1hr)',
+    getState: ()=> results.app.a3>10?'fail':results.app.a3>0?'warn':'ok',
+    getContent: ()=> {
+      const n=results.app.a3; const s=n>10?'fail':n>0?'warn':'ok';
+      return `
+        <div class="drawer-section">
+          <div class="drawer-section-title">What This Is</div>
+          <p class="drawer-text">Failed Flow Designer flows in the last hour. Broken flows often cascade — one failure can trigger error handlers that create more failures. Common causes are misconfigured flow steps, missing related records, or business rule conflicts.</p>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Current Status</div>
+          <div class="drawer-metric"><span class="drawer-metric-label">Failed flows (1hr)</span><span class="drawer-metric-val ${s}">${n}</span></div>
+        </div>
+        ${s!=='ok'?`
+        <div class="drawer-actions">
+          <a class="btn-drawer danger" href="${BASE}/sys_flow_context_list.do?sysparm_query=status=error^sys_created_onRELATIVEGT@hour@ago@1^ORDERBYDESCsys_created_on" target="_blank">🔍 View Failed Flows in ServiceNow</a>
+        </div>`:`<div class="ok-banner">✓ No Flow Designer errors in the last hour.</div>`}`;
+    }
+  },
+};
+
+function openCardDetail(id) {
+  const def=CARD_DETAILS[id];
+  if(!def) return;
+  const state=def.getState();
+  document.getElementById('drawer-dot').className='drawer-status-dot '+state;
+  document.getElementById('drawer-title').textContent=def.title;
+  document.getElementById('drawer-subtitle').textContent=def.subtitle;
+  document.getElementById('drawer-body').innerHTML=def.getContent();
+  document.getElementById('drawer-backdrop').classList.add('open');
+  document.getElementById('detail-drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-backdrop').classList.remove('open');
+  document.getElementById('detail-drawer').classList.remove('open');
+}
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function appendToResults(html){const el=document.getElementById('results-area');if(el)el.insertAdjacentHTML('beforeend',html);}
+function resetAll(){results={};logLines=[];closeDrawer();document.getElementById('screen-run').classList.remove('active');document.getElementById('screen-login').classList.add('active');}
+</script>
+</body>
+</html>
