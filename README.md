@@ -499,7 +499,7 @@ When you click a non-healthy row in the report, it expands to show:
 
 ### Real Example: Live Session Results
 
-*Run on `demoalectriallwfzu134583.service-now.com`, March 2026*
+*Run on `your-instance.service-now.com`, March 2026*
 
 | Check | Result | Status |
 |-------|--------|--------|
